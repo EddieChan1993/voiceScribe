@@ -34,8 +34,8 @@ echo "→ 创建虚拟环境..."
 echo "→ 升级 pip..."
 .venv/bin/pip install --upgrade pip -q
 
-echo "→ 安装基础依赖..."
-.venv/bin/pip install sounddevice numpy customtkinter faster-whisper -q
+echo "→ 安装依赖..."
+.venv/bin/pip install sounddevice numpy customtkinter faster-whisper pyobjc-core pyobjc-framework-ScreenCaptureKit pyobjc-framework-CoreAudio -q
 
 if [ "$ARCH" = "arm64" ]; then
     echo "→ Apple Silicon 检测到，安装 mlx-whisper..."

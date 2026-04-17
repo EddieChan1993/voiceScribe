@@ -1,9 +1,12 @@
-# Intel Mac
-faster-whisper>=1.0.0
-
-# Apple Silicon（M 系列自动安装）
-# mlx-whisper 由 setup.sh 按硬件判断安装
-
+# 核心依赖（无需 ffmpeg，音频直接以 numpy 数组传给模型）
 sounddevice>=0.4.6
 numpy>=1.24.0
 customtkinter>=5.2.0
+
+# 推理引擎：Intel 用 faster-whisper，Apple Silicon 用 mlx-whisper（setup.sh 自动选择）
+faster-whisper>=1.0.0
+
+# macOS 系统音频捕获（ScreenCaptureKit，无需 BlackHole）
+pyobjc-core>=10.0
+pyobjc-framework-ScreenCaptureKit>=10.0
+pyobjc-framework-CoreAudio>=10.0

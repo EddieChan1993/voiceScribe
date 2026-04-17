@@ -19,10 +19,7 @@
 ## 安装
 
 ```bash
-# 1. 安装 ffmpeg
-brew install ffmpeg
-
-# 2. 一键安装（自动识别芯片）
+# 一键安装（自动识别芯片）
 cd voiceScribe
 bash setup.sh
 
