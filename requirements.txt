@@ -1,0 +1,9 @@
+# Intel Mac
+faster-whisper>=1.0.0
+
+# Apple Silicon（M 系列自动安装）
+# mlx-whisper 由 setup.sh 按硬件判断安装
+
+sounddevice>=0.4.6
+numpy>=1.24.0
+customtkinter>=5.2.0
