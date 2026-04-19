@@ -1,73 +1,85 @@
 # voiceScribe
 
-实时语音转文字工具，基于本地 Whisper 模型，无需联网，支持麦克风和系统音频（视频字幕）。
+macOS 本地实时语音转文字工具，基于 Whisper，完全离线，支持麦克风输入。
 
 ## 特性
 
-- 🎙 **流式实时字幕**：边说边纠正，句子未完成前持续刷新，定稿后换行
-- 🖥 **系统音频捕获**：macOS 13+ 原生 ScreenCaptureKit，无需安装 BlackHole
-- ⚡ **自动适配硬件**：Apple Silicon 使用 MLX 引擎（极速），Intel 使用 faster-whisper（CPU int8）
+- 🎙 **流式实时字幕**：边说边刷新，停顿后定稿换行，蓝色预览 / 白色定稿
+- ⚡ **自动适配硬件**：Apple Silicon 使用 MLX 引擎（Neural Engine 加速），Intel 使用 faster-whisper（CPU int8）
 - 🔒 **完全本地**：模型在本机运行，音频不上传
+- 🛡 **幻觉过滤**：自动过滤 Whisper 在低质量音频下产生的重复词
 
 ## 硬件对应
 
-| 硬件 | 引擎 | 默认模型 | 视频延迟 |
-|------|------|---------|---------|
-| Apple Silicon (M系列) | mlx-whisper | large-v3-turbo | < 0.5 秒 |
-| Intel Mac | faster-whisper | medium.en | 1-2 秒 |
+| 硬件 | 引擎 | 推荐模型 |
+|------|------|---------|
+| Apple Silicon (M系列) | mlx-whisper | large-v3-turbo |
+| Intel Mac | faster-whisper | medium.en |
 
 ## 安装
 
 ```bash
-# 一键安装（自动识别芯片）
 cd voiceScribe
-bash setup.sh
-
-# 3. 运行
-.venv/bin/python3 app.py
+bash setup.sh          # 自动检测芯片、创建 venv、安装依赖
 ```
 
-## 生成可点击的 App 图标
+### 手动安装
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 运行
+
+```bash
+# 直接运行
+.venv/bin/python3 app.py
+
+# 或生成可双击的 .app（推荐）
 bash make_app.sh
 open ~/Applications/voiceScribe.app
 ```
-
-## 使用
-
-### 麦克风模式（默认）
-- 来源选「麦克风」，选择对应设备，点「▶ 开始」
-- 对着麦克风说话，停顿后自动输出
-
-### 系统音频模式（视频字幕）
-- 来源选「系统音频 (ScreenCaptureKit)」
-- 首次使用系统会弹出屏幕录制权限请求，允许即可
-- 开启「视频模式」开关，点「▶ 开始」
-- 播放任意视频，字幕自动输出
-
-> macOS 12 及以下需要安装 [BlackHole](https://github.com/ExistingForge/BlackHole) 作为替代方案
 
 ## 界面说明
 
 | 控件 | 说明 |
 |------|------|
-| 模型下拉 | 切换 Whisper 模型（首次使用自动下载）|
+| 模型下拉 | 切换 Whisper 模型（MLX 仅显示已下载的模型）|
 | 语言下拉 | en / zh / ja / ko / auto |
-| 视频模式 | 开：固定窗口切片（连续音频）；关：VAD 停顿检测（说话）|
+| 设备下拉 | 选择麦克风输入设备，↻ 刷新列表 |
+| ▶ 开始 | 首次启动会加载模型（几秒），之后复用 |
+| ⏹ 停止 | 停止录音，文字面板保留，不清空 |
 | 复制 | 复制全部字幕到剪贴板 |
-| 清空 | 清空文本区 |
+| 清空 | 手动清空文字面板（首次开始自动清一次）|
 | 关闭窗口 | 隐藏到 Dock，模型保留在内存 |
-| 退出按钮 | 真正退出，释放内存 |
+| 退出 | 真正退出，释放内存 |
+
+## VAD 参数（在 app.py 顶部调整）
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `SILENCE_RMS` | 80 | 低于此值视为静音（噪音大时调高）|
+| `SILENCE_SEC` | 1.0 | 停顿多少秒提交定稿 |
+| `MAX_WIN_SEC` | 8.0 | 单句最大时长（超过自动截断）|
+| `REFRESH_SEC` | 0.35s / 1.0s | partial 刷新频率（MLX / Intel）|
 
 ## 目录结构
 
 ```
 voiceScribe/
 ├── app.py            # 主程序（GUI）
-├── system_audio.py   # ScreenCaptureKit 系统音频捕获
+├── system_audio.py   # ScreenCaptureKit 系统音频捕获（备用，暂未启用）
 ├── main.py           # CLI 版本
 ├── setup.sh          # 一键安装脚本
-├── make_app.sh       # 生成 .app 图标
+├── make_app.sh       # 生成 ~/Applications/voiceScribe.app
 └── requirements.txt
 ```
+
+## 已知问题 / TODO
+
+- [ ] 系统音频（内录）功能代码已完成，待 ScreenCaptureKit 权限调试后启用
+- [ ] Intel Mac 延迟约 1 秒，受 CPU 算力限制
+- [ ] MLX 模型首次下载需要 hf-mirror 或 VPN（`HF_ENDPOINT=https://hf-mirror.com`）
+- [ ] make_app.sh 生成的图标为纯色圆形，待替换为精美图标
